@@ -11,24 +11,24 @@ namespace WorldEditModApi
 {
     public class WorldEdit
     {
-        public static void Initialize() // Launcher автоматически запускает метод Initialize() в каждой модификации
+        public static void Initialize() // Launcher Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё Р·Р°РїСѓСЃРєР°РµС‚ РјРµС‚РѕРґ Initialize() РІ РєР°Р¶РґРѕР№ РјРѕРґРёС„РёРєР°С†РёРё
         {
-            Engine.Window.Frame += WorldEditModApi; // Каждый кадр будет вызываться метод WorldEditModApi()
-            Engine.Window.Frame += Load; // Метод загрузки
+            Engine.Window.Frame += WorldEditModApi; // РљР°Р¶РґС‹Р№ РєР°РґСЂ Р±СѓРґРµС‚ РІС‹Р·С‹РІР°С‚СЊСЃСЏ РјРµС‚РѕРґ WorldEditModApi()
+            Engine.Window.Frame += Load; // РњРµС‚РѕРґ Р·Р°РіСЂСѓР·РєРё
             return;
         }
 
-        internal static string modPath = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/Survivalcraft/SCPlugins/WorldEdit/"; // Стандартная папка мода
-        internal static int OldLookControlMode = (int) SettingsManager.LookControlMode; // "Старый" режим управления. Используется для переключения в режим SplitTouch, когда активировано меню WorldEdit
-        internal static TerrainRaycastResult? Point1 = null, Point2 = null, Point3 = null; // Точки выделения зоны
-        internal static int SelectedBlock; // Выбранный блок, соответствует точке 1
-        internal static int ReplaceableBlock; // Заменяемый блок, соответствует точке 2
+        internal static string modPath = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/Survivalcraft/SCPlugins/WorldEdit/"; // РЎС‚Р°РЅРґР°СЂС‚РЅР°СЏ РїР°РїРєР° РјРѕРґР°
+        internal static int OldLookControlMode = (int) SettingsManager.LookControlMode; // "РЎС‚Р°СЂС‹Р№" СЂРµР¶РёРј СѓРїСЂР°РІР»РµРЅРёСЏ. РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ РІ СЂРµР¶РёРј SplitTouch, РєРѕРіРґР° Р°РєС‚РёРІРёСЂРѕРІР°РЅРѕ РјРµРЅСЋ WorldEdit
+        internal static TerrainRaycastResult? Point1 = null, Point2 = null, Point3 = null; // РўРѕС‡РєРё РІС‹РґРµР»РµРЅРёСЏ Р·РѕРЅС‹
+        internal static int SelectedBlock; // Р’С‹Р±СЂР°РЅРЅС‹Р№ Р±Р»РѕРє, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ С‚РѕС‡РєРµ 1
+        internal static int ReplaceableBlock; // Р’С‹Р±СЂР°РЅРЅС‹Р№ Р±Р»РѕРє, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ С‚РѕС‡РєРµ 2
 
         public static void Load()
         {
-            if (!(ScreensManager.GetScreenName(ScreensManager.CurrentScreen) == "Game")) return; // Выходим, если мы не в игре
+            if (!(ScreensManager.GetScreenName(ScreensManager.CurrentScreen) == "Game")) return; // Р’С‹С…РѕРґРёРј, РµСЃР»Рё РјС‹ РЅРµ РІ РёРіСЂРµ
 
-            // Загрузка кнопок при входе в игру            
+            // Р—Р°РіСЂСѓР·РєР° РєРЅРѕРїРѕРє РїСЂРё РІС…РѕРґРµ РІ РёРіСЂСѓ
             LoadButtons(Path.Combine(modPath, "/WorldEditButtons.xml"));
 
             ApplyButtonImage("F1", Path.Combine(modPath, "Button1.png"), Path.Combine(modPath, "Button1_pressed.png"));
@@ -38,22 +38,22 @@ namespace WorldEditModApi
             ApplyButtonImage("F6", Path.Combine(modPath, "ButtonFill.png"), Path.Combine(modPath, "ButtonFill_pressed.png"));
             ApplyButtonImage("F7", Path.Combine(modPath, "ButtonReplace.png"), Path.Combine(modPath, "ButtonReplace_pressed.png"));
             ApplyButtonImage("F8", Path.Combine(modPath, "ButtonClear.png"), Path.Combine(modPath, "ButtonClear_pressed.png"));
-            Engine.Window.Frame -= Load; // Все загружено, убираем вызов метода
+            Engine.Window.Frame -= Load; // Р’СЃРµ Р·Р°РіСЂСѓР¶РµРЅРѕ, СѓР±РёСЂР°РµРј РІС‹Р·РѕРІ РјРµС‚РѕРґР°
             return;            
         }
 
         internal static void WorldEditModApi()
         {
-            if (!(ScreensManager.GetScreenName(ScreensManager.CurrentScreen) == "Game")) // Выходим, если мы не в игре
+            if (!(ScreensManager.GetScreenName(ScreensManager.CurrentScreen) == "Game")) // Р’С‹С…РѕРґРёРј, РµСЃР»Рё РјС‹ РЅРµ РІ РёРіСЂРµ
             {
                 return;
             }
             
-            // Показазывеем контейнер с кнопками, если активирована кнопка WorldEditMenu
+            // РџРѕРєР°Р·Р°Р·С‹РІРµРµРј РєРѕРЅС‚РµР№РЅРµСЂ СЃ РєРЅРѕРїРєР°РјРё, РµСЃР»Рё Р°РєС‚РёРІРёСЂРѕРІР°РЅР° РєРЅРѕРїРєР° WorldEditMenu
             ScreensManager.CurrentScreen.ScreenWidget.FindWidget<StackPanelWidget>("WorldEditMenuContainerTop", true).IsVisible = ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked;
             ScreensManager.CurrentScreen.ScreenWidget.FindWidget<StackPanelWidget>("WorldEditMenuContainerBottom", true).IsVisible = ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked;
 
-            // Смена режима управления
+            // РЎРјРµРЅР° СЂРµР¶РёРјР° СѓРїСЂР°РІР»РµРЅРёСЏ
             if (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsClicked)
             {
                if (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked)
@@ -67,7 +67,7 @@ namespace WorldEditModApi
                 }
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F1)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F1", true).IsClicked)) // Выделение 1 точки
+            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F1)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F1", true).IsClicked)) // Р’С‹РґРµР»РµРЅРёРµ 1 С‚РѕС‡РєРё
             {
                 ComponentMiner componentMiner = Subsystems.Player.ComponentPlayer.ComponentMiner;
                 Point1 = componentMiner.PickTerrainForDigging(Subsystems.Drawing.ViewPosition, Subsystems.Drawing.ViewDirection);
@@ -80,7 +80,7 @@ namespace WorldEditModApi
                 }
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F2)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F2", true).IsClicked)) // Выделение 2 точки
+            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F2)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F2", true).IsClicked)) // Р’С‹РґРµР»РµРЅРёРµ 2 С‚РѕС‡РєРё
             {
                 ComponentMiner componentMiner = Subsystems.Player.ComponentPlayer.ComponentMiner;
                 Point2 = componentMiner.PickTerrainForDigging(Subsystems.Drawing.ViewPosition, Subsystems.Drawing.ViewDirection);
@@ -92,7 +92,7 @@ namespace WorldEditModApi
                 }
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F3)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F3", true).IsClicked)) // Выделение 3 точки
+            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F3)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F3", true).IsClicked)) // Р’С‹РґРµР»РµРЅРёРµ 3 С‚РѕС‡РєРё
             {
                 ComponentMiner componentMiner = Subsystems.Player.ComponentPlayer.ComponentMiner;
                 Point3 = componentMiner.PickTerrainForDigging(Subsystems.Drawing.ViewPosition, Subsystems.Drawing.ViewDirection);
@@ -103,7 +103,7 @@ namespace WorldEditModApi
                 }
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F5)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F5", true).IsClicked)) // Копирование выделенной зоны
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F5)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F5", true).IsClicked)) // РљРѕРїРёСЂРѕРІР°РЅРёРµ РІС‹РґРµР»РµРЅРЅРѕР№ Р·РѕРЅС‹
             {
                 if (Point1 == null)
                 {
@@ -176,7 +176,7 @@ namespace WorldEditModApi
                 return;
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F6)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F6", true).IsClicked)) // Заполнение зоны
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F6)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F6", true).IsClicked)) // Р—Р°РїРѕР»РЅРµРЅРёРµ Р·РѕРЅС‹
             {
                 if (Point1 == null)
                 {
@@ -209,7 +209,7 @@ namespace WorldEditModApi
                 return;
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F7)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F7", true).IsClicked)) // Замена зоны
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F7)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F7", true).IsClicked)) // Р—Р°РјРµРЅР° Р·РѕРЅС‹
             {
                 if (Point1 == null)
                 {
@@ -243,7 +243,7 @@ namespace WorldEditModApi
                 return;
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F8)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F8", true).IsClicked)) // Очистка зоны
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F8)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F8", true).IsClicked)) // РћС‡РёСЃС‚РєР° Р·РѕРЅС‹
             {
                 if (Point1 == null)
                 {
@@ -277,7 +277,7 @@ namespace WorldEditModApi
             }
         }
 
-        public static void ApplyButtonImage(string widgetName, string normalSubtexture, string clickedSubtexture) // Метод применения текстуры кнопокам из файлов
+        public static void ApplyButtonImage(string widgetName, string normalSubtexture, string clickedSubtexture) // РњРµС‚РѕРґ РїСЂРёРјРµРЅРµРЅРёСЏ С‚РµРєСЃС‚СѓСЂС‹ РєРЅРѕРїРѕРєР°Рј РёР· С„Р°Р№Р»РѕРІ
         {
             if (File.Exists(normalSubtexture))
             {
@@ -302,7 +302,7 @@ namespace WorldEditModApi
             else Log.Warning("Subtexture " + clickedSubtexture + " not found!");
         }
 
-        public static void LoadButtons(string XmlPath) // Загрузка кнопок из XML файла
+        public static void LoadButtons(string XmlPath) // Р—Р°РіСЂСѓР·РєР° РєРЅРѕРїРѕРє РёР· XML С„Р°Р№Р»Р°
         {
             using (FileStream fs = new FileStream(XmlPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
