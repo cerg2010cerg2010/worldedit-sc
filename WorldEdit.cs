@@ -13,8 +13,8 @@ namespace WorldEditModApi
     {
         public static void Initialize() // Launcher автоматически запускает метод Initialize() в каждой модификации
         {
-            Engine.Window.Frame += WorldEditModApi; // Каждый кадр будет вызываться метод WorldEditModApi()
             Engine.Window.Frame += Load; // Метод загрузки
+            Engine.Window.Frame += WorldEditModApi; // Каждый кадр будет вызываться метод WorldEditModApi()
             return;
         }
 
@@ -22,14 +22,14 @@ namespace WorldEditModApi
         internal static int OldLookControlMode = (int) SettingsManager.LookControlMode; // "Старый" режим управления. Используется для переключения в режим SplitTouch, когда активировано меню WorldEdit
         internal static TerrainRaycastResult? Point1 = null, Point2 = null, Point3 = null; // Точки выделения зоны
         internal static int SelectedBlock; // Выбранный блок, соответствует точке 1
-        internal static int ReplaceableBlock; // Выбранный блок, соответствует точке 2
+        internal static int ReplaceableBlock; // Заменяемый блок, соответствует точке 2
 
         public static void Load()
         {
             if (!(ScreensManager.GetScreenName(ScreensManager.CurrentScreen) == "Game")) return; // Выходим, если мы не в игре
 
-            // Загрузка кнопок при входе в игру
-            LoadButtons(Path.Combine(modPath, "/WorldEditButtons.xml"));
+            // Загрузка кнопок при входе в игру            
+            LoadButtons(Path.Combine(modPath, "WorldEditButtons.xml"));
 
             ApplyButtonImage("F1", Path.Combine(modPath, "Button1.png"), Path.Combine(modPath, "Button1_pressed.png"));
             ApplyButtonImage("F2", Path.Combine(modPath, "Button2.png"), Path.Combine(modPath, "Button2_pressed.png"));
@@ -54,7 +54,7 @@ namespace WorldEditModApi
             ScreensManager.CurrentScreen.ScreenWidget.FindWidget<StackPanelWidget>("WorldEditMenuContainerBottom", true).IsVisible = ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked;
 
             // Смена режима управления
-            if (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsClicked)
+            if (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsTapped)
             {
                if (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked)
                 {
@@ -67,7 +67,7 @@ namespace WorldEditModApi
                 }
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F1)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F1", true).IsClicked)) // Выделение 1 точки
+            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F1)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F1", true).IsTapped)) // Выделение 1 точки
             {
                 ComponentMiner componentMiner = Subsystems.Player.ComponentPlayer.ComponentMiner;
                 Point1 = componentMiner.PickTerrainForDigging(Subsystems.Drawing.ViewPosition, Subsystems.Drawing.ViewDirection);
@@ -80,7 +80,7 @@ namespace WorldEditModApi
                 }
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F2)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F2", true).IsClicked)) // Выделение 2 точки
+            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F2)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F2", true).IsTapped)) // Выделение 2 точки
             {
                 ComponentMiner componentMiner = Subsystems.Player.ComponentPlayer.ComponentMiner;
                 Point2 = componentMiner.PickTerrainForDigging(Subsystems.Drawing.ViewPosition, Subsystems.Drawing.ViewDirection);
@@ -92,7 +92,7 @@ namespace WorldEditModApi
                 }
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F3)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F3", true).IsClicked)) // Выделение 3 точки
+            if ((Engine.Input.Keyboard.IsKeyDown(Engine.Input.Key.F3)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F3", true).IsTapped)) // Выделение 3 точки
             {
                 ComponentMiner componentMiner = Subsystems.Player.ComponentPlayer.ComponentMiner;
                 Point3 = componentMiner.PickTerrainForDigging(Subsystems.Drawing.ViewPosition, Subsystems.Drawing.ViewDirection);
@@ -103,7 +103,7 @@ namespace WorldEditModApi
                 }
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F5)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F5", true).IsClicked)) // Копирование выделенной зоны
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F5)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F5", true).IsTapped)) // Копирование выделенной зоны
             {
                 if (Point1 == null)
                 {
@@ -176,7 +176,7 @@ namespace WorldEditModApi
                 return;
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F6)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F6", true).IsClicked)) // Заполнение зоны
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F6)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F6", true).IsTapped)) // Заполнение зоны
             {
                 if (Point1 == null)
                 {
@@ -209,7 +209,7 @@ namespace WorldEditModApi
                 return;
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F7)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F7", true).IsClicked)) // Замена зоны
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F7)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F7", true).IsTapped)) // Замена зоны
             {
                 if (Point1 == null)
                 {
@@ -243,7 +243,7 @@ namespace WorldEditModApi
                 return;
             }
 
-            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F8)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F8", true).IsClicked)) // Очистка зоны
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F8)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F8", true).IsTapped)) // Очистка зоны
             {
                 if (Point1 == null)
                 {
