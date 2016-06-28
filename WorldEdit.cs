@@ -13,6 +13,7 @@ namespace WorldEditModApi
     {
         public static void Initialize() // Launcher автоматически запускает метод Initialize() в каждой модификации
         {
+
             Engine.Window.Frame += Load; // Метод загрузки
             Engine.Window.Frame += WorldEditModApi; // Каждый кадр будет вызываться метод WorldEditModApi()
             return;
@@ -75,7 +76,7 @@ namespace WorldEditModApi
                 if (Point1.HasValue)
                 {
                     SCModApi.Gui.DisplayMessage("Set position 1 on: " + Point1.Value.CellFace.X + ", " + Point1.Value.CellFace.Y + ", " + Point1.Value.CellFace.Z, false);
-                    SelectedBlock = World.GetBlock(Point1.Value.CellFace.X, Point1.Value.CellFace.Y, Point1.Value.CellFace.Z);
+                    SelectedBlock = World.GetBlock(Point1.Value.CellFace.X, Point1.Value.CellFace.Y, Point1.Value.CellFace.Z);                    
                     return;
                 }
             }
@@ -101,6 +102,48 @@ namespace WorldEditModApi
                     SCModApi.Gui.DisplayMessage("Set position 3 on: " + Point1.Value.CellFace.X + ", " + Point1.Value.CellFace.Y + ", " + Point1.Value.CellFace.Z, false);
                     return;
                 }
+            }
+
+            if (Point1.HasValue && Point2.HasValue && ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked) // Выделение зоны между точками 1 и 2
+            {
+                int startX = Math.Min(Point1.Value.CellFace.Point.X, Point2.Value.CellFace.Point.X);
+                int endX = Math.Max(Point1.Value.CellFace.Point.X, Point2.Value.CellFace.Point.X);
+                int startY = Math.Min(Point1.Value.CellFace.Point.Y, Point2.Value.CellFace.Point.Y);
+                int endY = Math.Max(Point1.Value.CellFace.Point.Y, Point2.Value.CellFace.Point.Y);
+                int startZ = Math.Min(Point1.Value.CellFace.Point.Z, Point2.Value.CellFace.Point.Z);
+                int endZ = Math.Max(Point1.Value.CellFace.Point.Z, Point2.Value.CellFace.Point.Z);
+
+                PrimitivesRenderer3D PrimitivesRenderer3D = new PrimitivesRenderer3D();
+                Vector3 pointStart = new Vector3(startX, startY, startZ);
+                Vector3 pointEnd = new Vector3(endX + 1, endY + 1, endZ + 1);
+                BoundingBox boundingBox = new BoundingBox(pointStart, pointEnd);
+                PrimitivesRenderer3D.FlatBatch(-1, DepthStencilState.None, (RasterizerState)null, (BlendState)null).QueueBoundingBox(boundingBox, Color.Green);
+                PrimitivesRenderer3D.Flush(Subsystems.Drawing.ViewProjectionMatrix, true);
+            }
+
+            if (Point3.HasValue && ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked) // Выделение зоны вставки
+            {
+                
+                int startX = Math.Min(Point1.Value.CellFace.Point.X, Point2.Value.CellFace.Point.X);
+                int endX = Math.Max(Point1.Value.CellFace.Point.X, Point2.Value.CellFace.Point.X);
+                int startY = Math.Min(Point1.Value.CellFace.Point.Y, Point2.Value.CellFace.Point.Y);
+                int endY = Math.Max(Point1.Value.CellFace.Point.Y, Point2.Value.CellFace.Point.Y);
+                int startZ = Math.Min(Point1.Value.CellFace.Point.Z, Point2.Value.CellFace.Point.Z);
+                int endZ = Math.Max(Point1.Value.CellFace.Point.Z, Point2.Value.CellFace.Point.Z);
+
+                startX += Point3.Value.CellFace.Point.X - Point1.Value.CellFace.Point.X;
+                startY += Point3.Value.CellFace.Point.Y - Point1.Value.CellFace.Point.Y;
+                startZ += Point3.Value.CellFace.Point.Z - Point1.Value.CellFace.Point.Z;
+                endX += Point3.Value.CellFace.Point.X - Point1.Value.CellFace.Point.X;
+                endY += Point3.Value.CellFace.Point.Y - Point1.Value.CellFace.Point.Y;
+                endZ += Point3.Value.CellFace.Point.Z - Point1.Value.CellFace.Point.Z;
+                
+                PrimitivesRenderer3D PrimitivesRenderer3D = new PrimitivesRenderer3D();
+                Vector3 pointStart = new Vector3(startX, startY, startZ);
+                Vector3 pointEnd = new Vector3(endX + 1, endY + 1, endZ + 1);
+                BoundingBox boundingBox = new BoundingBox(pointStart, pointEnd);
+                PrimitivesRenderer3D.FlatBatch(-1, DepthStencilState.None, (RasterizerState)null, (BlendState)null).QueueBoundingBox(boundingBox, Color.Red);
+                PrimitivesRenderer3D.Flush(Subsystems.Drawing.ViewProjectionMatrix, true);
             }
 
             if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F5)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F5", true).IsTapped)) // Копирование выделенной зоны
@@ -310,5 +353,6 @@ namespace WorldEditModApi
                 fs.Close();
             }
         }
+        
     }
 }
