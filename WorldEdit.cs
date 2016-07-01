@@ -6,6 +6,7 @@ using Engine;
 using Engine.Graphics;
 using Game;
 using SCModApi;
+using System.Collections.Generic;
 
 namespace WorldEditModApi
 {
@@ -24,6 +25,8 @@ namespace WorldEditModApi
         internal static TerrainRaycastResult? Point1 = null, Point2 = null, Point3 = null; // Точки выделения зоны
         internal static int SelectedBlock; // Выбранный блок, соответствует точке 1
         internal static int ReplaceableBlock; // Заменяемый блок, соответствует точке 2
+        internal static int blockCount; // Счетчик блоков в памяти
+        internal static List<BlockMem> BlockList = new List<BlockMem>(); // Скопированные блоки в память
 
         public static void Load()
         {
@@ -39,6 +42,8 @@ namespace WorldEditModApi
             ApplyButtonImage("F6", Path.Combine(modPath, "ButtonFill.png"), Path.Combine(modPath, "ButtonFill_pressed.png"));
             ApplyButtonImage("F7", Path.Combine(modPath, "ButtonReplace.png"), Path.Combine(modPath, "ButtonReplace_pressed.png"));
             ApplyButtonImage("F8", Path.Combine(modPath, "ButtonClear.png"), Path.Combine(modPath, "ButtonClear_pressed.png"));
+            ApplyButtonImage("F9", Path.Combine(modPath, "ButtonMemCopy.png"), Path.Combine(modPath, "ButtonMemCopy_pressed.png"));
+            ApplyButtonImage("F10", Path.Combine(modPath, "ButtonMemPaste.png"), Path.Combine(modPath, "ButtonMemPaste_pressed.png"));
             Engine.Window.Frame -= Load; // Все загружено, убираем вызов метода
             return;            
         }
@@ -49,7 +54,7 @@ namespace WorldEditModApi
             {
                 return;
             }
-            
+
             // Показазывеем контейнер с кнопками, если активирована кнопка WorldEditMenu
             ScreensManager.CurrentScreen.ScreenWidget.FindWidget<StackPanelWidget>("WorldEditMenuContainerTop", true).IsVisible = ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked;
             ScreensManager.CurrentScreen.ScreenWidget.FindWidget<StackPanelWidget>("WorldEditMenuContainerBottom", true).IsVisible = ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("WorldEditMenu", true).IsChecked;
@@ -138,12 +143,12 @@ namespace WorldEditModApi
                 endY += Point3.Value.CellFace.Point.Y - Point1.Value.CellFace.Point.Y;
                 endZ += Point3.Value.CellFace.Point.Z - Point1.Value.CellFace.Point.Z;
                 
-                PrimitivesRenderer3D PrimitivesRenderer3D = new PrimitivesRenderer3D();
+                PrimitivesRenderer3D primitivesRenderer3D = new PrimitivesRenderer3D();
                 Vector3 pointStart = new Vector3(startX, startY, startZ);
                 Vector3 pointEnd = new Vector3(endX + 1, endY + 1, endZ + 1);
                 BoundingBox boundingBox = new BoundingBox(pointStart, pointEnd);
-                PrimitivesRenderer3D.FlatBatch(-1, DepthStencilState.None, (RasterizerState)null, (BlendState)null).QueueBoundingBox(boundingBox, Color.Red);
-                PrimitivesRenderer3D.Flush(Subsystems.Drawing.ViewProjectionMatrix, true);
+                primitivesRenderer3D.FlatBatch(-1, DepthStencilState.None, (RasterizerState)null, (BlendState)null).QueueBoundingBox(boundingBox, Color.Red);
+                primitivesRenderer3D.Flush(Subsystems.Drawing.ViewProjectionMatrix, true);
             }
 
             if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F5)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F5", true).IsTapped)) // Копирование выделенной зоны
@@ -211,7 +216,8 @@ namespace WorldEditModApi
                                 }
                                 
                                 int block = World.GetBlock(targetX, targetY, targetZ);
-                                World.SetBlock(PlaceX, PlaceY, PlaceZ, block);
+                                // 15360 - Air
+                                if (block != 15360) World.SetBlock(PlaceX, PlaceY, PlaceZ, block);
                             }
                         }
                     }
@@ -318,6 +324,108 @@ namespace WorldEditModApi
                 }
                 return;
             }
+
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F9)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F9", true).IsTapped)) // Копирование зоны в память
+            {
+                if (Point1 == null)
+                {
+                    Gui.DisplayMessage("You have not selected point 1", false);
+                }
+                else if (Point2 == null)
+                {
+                    Gui.DisplayMessage("You have not selected point 2", false);
+                }
+                else
+                {
+                    int startX = Math.Min(Point1.Value.CellFace.Point.X, Point2.Value.CellFace.Point.X);
+                    int endX = Math.Max(Point1.Value.CellFace.Point.X, Point2.Value.CellFace.Point.X);
+                    int startY = Math.Min(Point1.Value.CellFace.Point.Y, Point2.Value.CellFace.Point.Y);
+                    int endY = Math.Max(Point1.Value.CellFace.Point.Y, Point2.Value.CellFace.Point.Y);
+                    int startZ = Math.Min(Point1.Value.CellFace.Point.Z, Point2.Value.CellFace.Point.Z);
+                    int endZ = Math.Max(Point1.Value.CellFace.Point.Z, Point2.Value.CellFace.Point.Z);
+
+                    blockCount = 0;
+                    BlockList.Clear();
+
+                    for (int x = 0; x <= endX - startX; x++)
+                    {
+                        for (int y = 0; y <= endY - startY; y++)
+                        {
+                            for (int z = 0; z <= endZ - startZ; z++)
+                            {
+                                BlockMem blmem = new BlockMem();
+                                int X, Y, Z;
+                                if (Point1.Value.CellFace.Point.X > Point2.Value.CellFace.Point.X)
+                                {
+                                    blmem.x = - x;
+                                    X = Point1.Value.CellFace.Point.X - x;
+                                }
+                                else
+                                {
+                                    blmem.x = x;
+                                    X = Point1.Value.CellFace.Point.X + x;
+                                }
+
+                                if (Point1.Value.CellFace.Point.Y > Point2.Value.CellFace.Point.Y)
+                                {
+                                    blmem.y = - y;
+                                    Y = Point1.Value.CellFace.Point.Y - y;
+                                }
+                                else
+                                {
+                                    blmem.y = y;
+                                    Y = Point1.Value.CellFace.Point.Y + y;
+                                }
+
+                                if (Point1.Value.CellFace.Point.Z > Point2.Value.CellFace.Point.Z)
+                                {
+                                    blmem.z = - z;
+                                    Z = Point1.Value.CellFace.Point.Z - z;
+                                }
+                                else
+                                {
+                                    blmem.z = z;
+                                    Z = Point1.Value.CellFace.Point.Z + z;
+                                }
+                                
+                                blmem.id = World.GetBlock(X, Y, Z);
+                                BlockList.Add(blmem);
+                                blockCount++;
+                            }
+                        }
+                    }
+                }
+                Gui.DisplayMessage("Copied " + blockCount + " blocks", false);
+                return;
+            }
+
+            if ((Engine.Input.Keyboard.IsKeyDownOnce(Engine.Input.Key.F10)) || (ScreensManager.CurrentScreen.ScreenWidget.FindWidget<BitmapButtonWidget>("F10", true).IsTapped))  // Вставка зоны из памяти
+            {
+                if (Point3 == null) Gui.DisplayMessage("You have not selected point 3", false);
+                else
+                {
+                    for (var i = 0; i < blockCount; i++)
+                    {                        
+                        var xPos = Point3.Value.CellFace.X + BlockList[i].x;
+                        var yPos = Point3.Value.CellFace.Y + BlockList[i].y;
+                        var zPos = Point3.Value.CellFace.Z + BlockList[i].z;
+                        
+                        World.SetBlock(xPos, yPos, zPos, BlockList[i].id);
+                    }
+                    Gui.DisplayMessage("Pasted " + blockCount + " blocks", false);
+                }
+            }
+
+        }
+
+
+
+        internal class BlockMem
+        {
+            internal int x;
+            internal int y;
+            internal int z;
+            internal int id;
         }
 
         public static void ApplyButtonImage(string widgetName, string normalSubtexture, string clickedSubtexture) // Метод применения текстуры кнопокам из файлов
